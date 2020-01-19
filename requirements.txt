@@ -1,0 +1,4 @@
+pandas==0.25.3
+gensim==3.8.1
+spacy==2.2.3
+wordcloud==1.6.0
