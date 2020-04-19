@@ -45,21 +45,25 @@ if __name__ == "__main__":
     broken_words = ['isn', 'mustn', 'shouldn', 'couldn', 'doesn']
     numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '000']
     url_terms = ['http', 'https', 'ref', 'href', 'com']
-    time_periods = ['day', 'week', 'month', 'year']
+    days_of_the_week = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'
+                        'saturday', 'sunday']
+    time_periods = ['day', 'days', 'week', 'weeks', 'month', 'months', 'year', 'years']
     time_related = ['yesterday', 'today', 'tomorrow', 'day', 'night', 'morning',
-                    'afternoon', 'evening', 'edt', 'pst', 'time']
+                    'afternoon', 'evening', 'edt', 'pst', 'time', 'times']
     common_nouns = ['people', 'family', 'father', 'mother', 'brother', 'sister',
-                    'son', 'daughter', 'life']
+                    'son', 'daughter', 'life', 'man', 'woman']
     social_media = ['twitter', 'facebook', 'video', 'photo', 'image', 'post', 'user',
                     'social']
-    light_verb_roots = ['like', 'think', 'want', 'know', 'feel', 'look', 'come']
+    light_verb_roots = ['like', 'love', 'think', 'want', 'know', 'feel', 'look',
+                        'come', 'try', 'go', 'take', 'give']
+    # Convert light verb roots to all its forms using lemma lookup
     light_verbs_full = lookup_verbs(light_verb_roots, spacy_lemmas)
 
     # Combine into a single lit of stopwords
     add_stopwords = set(
         combine(
-            person_titles, broken_words, numbers, url_terms, time_periods,
-            time_related, common_nouns, social_media, light_verbs_full
+            person_titles, broken_words, numbers, url_terms, days_of_the_week, 
+            time_periods, time_related, common_nouns, social_media, light_verbs_full
         )
     )
 
