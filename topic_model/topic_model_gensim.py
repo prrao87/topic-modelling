@@ -2,7 +2,7 @@ import re
 import plac
 import pandas as pd
 import spacy
-from typing import List, Dict, Any, Type
+from typing import List, Dict, Any
 from math import ceil
 # gensim
 from gensim import corpora
@@ -18,6 +18,7 @@ tqdm.pandas()
 inputfile = "../data/nytimes.tsv"
 stopwordfile = "stopwords/custom_stopwords.txt"
 
+
 # ============  Methods  =================s
 def read_data(filepath: str) -> pd.DataFrame:
     "Read in a tab-separated file with date, headline and news content"
@@ -27,8 +28,8 @@ def read_data(filepath: str) -> pd.DataFrame:
     return df.iloc[:2000, :].copy()
 
 
-def get_stopwords():
-    # Read in stopwords
+def get_stopwords(stopwordfile: str) -> List[str]:
+    "Read in stopwords"
     with open(stopwordfile) as f:
         stopwords = []
         for line in f:
@@ -52,7 +53,7 @@ def lemmatize(text: str, nlp, stopwords: List[str]) -> List[str]:
     return lemma_list
 
 
-def preprocess(df: pd.DataFrame) -> pd.DataFrame:
+def preprocess(df: pd.DataFrame, stopwords: List[str]) -> pd.DataFrame:
     "Preprocess text in each row of the DataFrame"
     nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
     nlp.add_pipe(nlp.create_pipe('sentencizer'))
@@ -122,7 +123,7 @@ def plot_wordclouds(topics: List[Dict[str, float]],
     minDF=("Minimum document frequency for LDA", "option", "m1", float),
     maxDF=("Maximum document frequency for LDA", "option", "m2", float)
 )
-def main(num_topics=15, iterations=5, epochs=1, minDF=0.02, maxDF=0.8) -> None:
+def main(num_topics=15, iterations=200, epochs=20, minDF=0.02, maxDF=0.8) -> None:
     params = {
         'num_topics': num_topics,
         'iterations': iterations,
@@ -131,8 +132,9 @@ def main(num_topics=15, iterations=5, epochs=1, minDF=0.02, maxDF=0.8) -> None:
         'maxDF': maxDF,
     }
     df = read_data(inputfile)
+    stopwords = get_stopwords(stopwordfile)
     df_clean = clean_data(df)
-    df_preproc = preprocess(df_clean)
+    df_preproc = preprocess(df_clean, stopwords)
     model, corpus = run_lda_multicore(df_preproc, params)
     topic_list = model.show_topics(formatted=False,
                                    num_topics=params['num_topics'],
@@ -143,5 +145,4 @@ def main(num_topics=15, iterations=5, epochs=1, minDF=0.02, maxDF=0.8) -> None:
 
 
 if __name__ == "__main__":
-    stopwords = get_stopwords()
     plac.call(main)

@@ -1,6 +1,7 @@
 import sys
 from math import ceil
 from tqdm import tqdm
+from typing import List, Dict, Any
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as f
 from pyspark.sql.types import (
@@ -23,13 +24,14 @@ from wordcloud import WordCloud
 schema = StructType([
     StructField("date", DateType(), True),
     StructField("headline", StringType(), True),
-    StructField("content", StringType(), True)])
+    StructField("content", StringType(), True)]
+)
 # Input file and Stopwords
 inputfile = "../data/nytimes.tsv"
 stopwordfile = "stopwords/custom_stopwords.txt"
 
 
-def read_data():
+def read_data(inputfile: str):
     """Read in a tab-separated file with date, headline and news content
        to a Spark DataFrame
     """
@@ -40,7 +42,7 @@ def read_data():
     return df.limit(2000)
 
 
-def set_regextokenizer(inputCol, outputCol):
+def set_regextokenizer(inputCol: str, outputCol: str):
     "Use Spark to perform custom Regex tokenization"
     tokenizer = RegexTokenizer(
         inputCol=inputCol,
@@ -51,7 +53,7 @@ def set_regextokenizer(inputCol, outputCol):
     return tokenizer
 
 
-def set_stopword_remover(stopword, inputCol, outputCol):
+def set_stopword_remover(stopwordfile: str, inputCol: str, outputCol: str):
     "use Spark to drop stopwords from a sequence of tokens"
     stopwords = sc.textFile(stopwordfile).collect()
     remover = (StopWordsRemover(
@@ -59,12 +61,12 @@ def set_stopword_remover(stopword, inputCol, outputCol):
     return remover
 
 
-def set_document_assembler(inputCol):
+def set_document_assembler(inputCol: str):
     "Spark NLP document assembler"
     return DocumentAssembler().setInputCol(inputCol)
 
 
-def set_tokenizer(inputCol, outputCol):
+def set_tokenizer(inputCol: str, outputCol: str):
     "Tokenize text for input to the lemmatizer"
     tokenizer = (Tokenizer()
         .setInputCols([inputCol])
@@ -73,7 +75,7 @@ def set_tokenizer(inputCol, outputCol):
     return tokenizer
 
 
-def set_lemmatizer(inputCol, outputCol):
+def set_lemmatizer(inputCol: str, outputCol: str):
     "Retrieve root lemmas out of the input tokens"
     # Use default SparkNLP English pretrained lemmatizer for now
     lemmatizer = (LemmatizerModel.pretrained(name="lemma_antbnc", lang="en")
@@ -83,7 +85,7 @@ def set_lemmatizer(inputCol, outputCol):
     return lemmatizer
 
 
-def set_finisher(finishedCol):
+def set_finisher(finishedCol: str):
     "Finisher transform for Spark NLP pipeline"
     finisher = (Finisher()
         .setInputCols([finishedCol])
@@ -92,7 +94,7 @@ def set_finisher(finishedCol):
     return finisher
 
 
-def set_countvectorizer(inputCol, outputCol, params):
+def set_countvectorizer(inputCol: str, outputCol: str, params: Dict[str, Any]):
     countvectorizer = CountVectorizer(
         inputCol=inputCol,
         outputCol=outputCol,
@@ -104,11 +106,11 @@ def set_countvectorizer(inputCol, outputCol, params):
     return countvectorizer
 
 
-def set_idf(inputCol, outputCol):
+def set_idf(inputCol: str, outputCol: str):
     return IDF(inputCol="features", outputCol="idf")
 
 
-def set_lda_model(params):
+def set_lda_model(params: Dict[str, Any]):
     lda = LDA(
         k=params['num_topics'],
         maxIter=params['iterations'],
@@ -151,7 +153,7 @@ def run_sparknlp_pipeline(df):
     return nlpPipelineDF
 
 
-def run_ml_pipeline(nlpPipelineDF, params):
+def run_ml_pipeline(nlpPipelineDF, params: Dict[str, Any]):
     """Create a Spark ML pipeline and transform the input NLP-transformed DataFrame 
        to produce a trained LDA topic model for the given data.
     """
@@ -170,7 +172,7 @@ def run_ml_pipeline(nlpPipelineDF, params):
     return mlModel, ldaPerplexity
 
 
-def describe_topics(mlModel):
+def describe_topics(mlModel) -> List[Dict[str, float]]:
     """Obtain topic words and weights from the LDA model.
        Returns: topics -> List[Dict[str, float]]
        A list of mappings between the top 15 topic words (str) and their weights
@@ -200,7 +202,7 @@ def describe_topics(mlModel):
     return topics
 
 
-def plot_wordclouds(topics, colormap="cividis"):
+def plot_wordclouds(topics: List[Dict[str, float]], colormap: str="cividis") -> None:
     cloud = WordCloud(
         background_color='white',
         width=600,
@@ -231,24 +233,26 @@ def plot_wordclouds(topics, colormap="cividis"):
     fig.savefig("pyspark-topics.png", bbox_extra_artists=[st], bbox_inches='tight')
 
 
-def main(params):
-    df = read_data()
+def main(params: Dict[str, Any]) -> List[Dict[str, float]]:
+    df = read_data(inputfile)
     preprocDF = run_spark_preproc_pipeline(df)
     # Persist NLP DataFrame for performance
     nlpPipelineDF = run_sparknlp_pipeline(preprocDF).persist()
     mlModel, ldaPerplexity = run_ml_pipeline(nlpPipelineDF, params)
     topics = describe_topics(mlModel)
-    plot_wordclouds(topics)
+    return topics
 
 
 if __name__ == "__main__":
+
     arg_names = ["num_topics", "iterations", "vocabsize", "minDF", "maxDF"]
+
     if len(sys.argv[1:]) != len(arg_names):
         raise Exception(
             "Please specify values for five LDA params: {}".format(
                 ', '.join(arg_names))
         )
-    parse_vals = [
+    parse_args = [
         int(sys.argv[1]),
         int(sys.argv[2]),
         int(sys.argv[3]),
@@ -256,7 +260,7 @@ if __name__ == "__main__":
         float(sys.argv[5]),
     ]
     # Store LDA params as a dict
-    params = dict(zip(arg_names, parse_vals))
+    params = dict(zip(arg_names, parse_args))
 
     spark = (SparkSession.builder
         .appName("Spark Topic Model")
@@ -271,7 +275,8 @@ if __name__ == "__main__":
     )
     sc = spark.sparkContext
 
-    main(params)
+    topics = main(params)
+    plot_wordclouds(topics)
 
     # Close spark
     spark.stop()
