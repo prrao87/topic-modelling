@@ -16,10 +16,10 @@ add_stopwords = set(
 )
 
 combined_stopwords = spacy_stopwords.union(add_stopwords)
-stopword_list = list(combined_stopwords)
+stopword_list = sorted(list(combined_stopwords))
 print(f"New stopword list contains {len(stopword_list)} words.")
 
 # Write out stopwords to file
-with open('stopwords/custom_stopwords.txt', 'w') as f:
+with open('custom_stopwords.txt', 'w') as f:
     for word in stopword_list:
         f.write(word + '\n')
