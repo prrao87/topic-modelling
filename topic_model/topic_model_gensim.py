@@ -25,7 +25,7 @@ def read_data(filepath: str) -> pd.DataFrame:
     df = pd.read_csv(filepath, sep='\t', header=None,
                      names=['date', 'headline', 'content'])
     df['date'] = pd.to_datetime(df['date'], format="%Y-%m-%d")
-    return df.iloc[:2000, :].copy()
+    return df
 
 
 def get_stopwords(stopwordfile: str) -> List[str]:

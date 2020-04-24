@@ -39,7 +39,7 @@ def read_data(inputfile: str):
           .csv(inputfile, sep='\t', schema=schema)
           .toDF("date", "headline", "content")
           .drop("headline"))
-    return df.limit(2000)
+    return df
 
 
 def set_regextokenizer(inputCol: str, outputCol: str):
