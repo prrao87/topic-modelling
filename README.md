@@ -116,11 +116,11 @@ The PySpark topic model script accepts command line arguments, as well as a manu
 
 ```
 cd topic_model
-spark-submit --packages com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.0 pyspark_topic_model.py 15 100 5000 0.02 0.8
+spark-submit --packages com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.0 topic_model_pyspark.py 15 100 5000 0.02 0.8
 ```
 The arguments provided to the Python script through `sys.argv` are described below:
 ```
-spark-submit --packages com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.0 pyspark_topic_model.py
+spark-submit --packages com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.0 topic_model_pyspark.py
         15     # Number of topics in LDA
         100    # Max. iterations in LDA
         5000   # Max. vocabulary size to consider in LDA

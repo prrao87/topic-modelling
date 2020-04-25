@@ -267,7 +267,7 @@ if __name__ == "__main__":
         .master("local[*]")
         .config("spark.driver.memory", "1G")
         .config("spark.executor.memory", "1G")
-        .config("spark.sql.shuffle.partitions", 32)
+        .config("spark.sql.shuffle.partitions", 64)
         .config("spark.shuffle.io.maxRetries", 20)
         .config("spark.shuffle.io.retryWait", "20s")
         .config("spark.buffer.pageSize", "2m")
