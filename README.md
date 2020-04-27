@@ -1,4 +1,4 @@
-V# Building a Scalable Topic Model Workflow
+# Building a Scalable Topic Model Workflow
 
 ## Latent Dirichlet Allocation
 By far the most popular method to model themes and topics in discrete document corpora, Latent Dirichlet Allocation (LDA) is a generative probabilistic model that represents documents as a distribution over words belonging to a topic. In general, topic modelling is an *unsupervised modelling technique* that requires human inspection as well as some level of domain expertise to label the extracted distribution of words as a "topic". A key feature of LDA is that it is a "multiple membership" mixture model, meaning that the same words can appear multiple times in different topics. 
