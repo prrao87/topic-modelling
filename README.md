@@ -1,4 +1,4 @@
-# Building a Scalable Topic Model Workflow
+V# Building a Scalable Topic Model Workflow
 
 ## Latent Dirichlet Allocation
 By far the most popular method to model themes and topics in discrete document corpora, Latent Dirichlet Allocation (LDA) is a generative probabilistic model that represents documents as a distribution over words belonging to a topic. In general, topic modelling is an *unsupervised modelling technique* that requires human inspection as well as some level of domain expertise to label the extracted distribution of words as a "topic". A key feature of LDA is that it is a "multiple membership" mixture model, meaning that the same words can appear multiple times in different topics. 
@@ -59,6 +59,7 @@ Specify the PySpark location as an environment variable:
 ```
 export SPARK_HOME=/path/to/spark/
 export PYSPARK_PYTHON=python3
+export PYSPARK_DRIVER_PYTHON=python3
 ```
 
 ## Obtain Raw Data
@@ -87,7 +88,7 @@ The Gensim topic model script accepts command line arguments as follows.
 
 ```
 cd topic_model
-python topic_model_gensim.py --num-topics 15 --iterations 200 --epochs 20
+python topic_model_gensim.py --num-topics 15 --iterations 200 --epochs 20 --minDF 0.02 --maxDF 0.8
 ```
 
 Obtain a description of the command line arguments by typing the `-h` command.
@@ -116,16 +117,26 @@ The PySpark topic model script accepts command line arguments, as well as a manu
 
 ```
 cd topic_model
-spark-submit --packages com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.0 topic_model_pyspark.py 15 100 5000 0.02 0.8
+spark-submit --packages com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.0 topic_model_pyspark.py --num-topics 15 --iterations 200 --vocabsize 5000 --minDF 0.02 --maxDF 0.8
 ```
-The arguments provided to the Python script through `sys.argv` are described below:
+
+Obtain a description of the command line arguments by typing the `-h` command.
 ```
-spark-submit --packages com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.0 topic_model_pyspark.py
-        15     # Number of topics in LDA
-        100    # Max. iterations in LDA
-        5000   # Max. vocabulary size to consider in LDA
-        0.02   # Min. document frequency in LDA
-        0.8    # Max. document frequency in LDA
+spark-submit topic_model_pyspark --help
+usage: topic_model_pyspark.py [-h] [-n 10] [-i 100] [-v 5000] [-m1 0.02]
+                              [-m2 0.8]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -n 10, --num-topics 10
+                        Number of topics in LDA
+  -i 100, --iterations 100
+                        Iterations in LDA
+  -v 5000, --vocabsize 5000
+                        <aximum vocabulary size for LDA
+  -m1 0.02, --minDF 0.02
+                        Minimum document frequency for LDA
+  -m2 0.8, --maxDF 0.8  Maximum document frequency for LDA
 ```
 
 ## References

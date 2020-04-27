@@ -1,4 +1,5 @@
 import sys
+import plac  # For command line arguments
 from math import ceil
 from tqdm import tqdm
 from typing import List, Dict, Any
@@ -233,7 +234,21 @@ def plot_wordclouds(topics: List[Dict[str, float]], colormap: str="cividis") -> 
     fig.savefig("pyspark-topics.png", bbox_extra_artists=[st], bbox_inches='tight')
 
 
-def main(params: Dict[str, Any]) -> List[Dict[str, float]]:
+@plac.annotations(
+    num_topics=("Number of topics in LDA", "option", "n", int),
+    iterations=("Iterations in LDA", "option", "i", int),
+    vocabsize=("<aximum vocabulary size for LDA", "option", "v", int),
+    minDF=("Minimum document frequency for LDA", "option", "m1", float),
+    maxDF=("Maximum document frequency for LDA", "option", "m2", float)
+)
+def main(num_topics=10, iterations=100, vocabsize=5000, minDF=0.02, maxDF=0.8) -> List[Dict[str, float]]:
+    params = {
+        'num_topics': num_topics,
+        'iterations': iterations,
+        'vocabsize': vocabsize,
+        'minDF': minDF,
+        'maxDF': maxDF,
+    }
     df = read_data(inputfile)
     preprocDF = run_spark_preproc_pipeline(df)
     # Persist NLP DataFrame for performance
@@ -244,24 +259,7 @@ def main(params: Dict[str, Any]) -> List[Dict[str, float]]:
 
 
 if __name__ == "__main__":
-
-    arg_names = ["num_topics", "iterations", "vocabsize", "minDF", "maxDF"]
-
-    if len(sys.argv[1:]) != len(arg_names):
-        raise Exception(
-            "Please specify values for five LDA params: {}".format(
-                ', '.join(arg_names))
-        )
-    parse_args = [
-        int(sys.argv[1]),
-        int(sys.argv[2]),
-        int(sys.argv[3]),
-        float(sys.argv[4]),
-        float(sys.argv[5]),
-    ]
-    # Store LDA params as a dict
-    params = dict(zip(arg_names, parse_args))
-
+    # Begin spark session
     spark = (SparkSession.builder
         .appName("Spark Topic Model")
         .master("local[*]")
@@ -275,7 +273,7 @@ if __name__ == "__main__":
     )
     sc = spark.sparkContext
 
-    topics = main(params)
+    topics = plac.call(main)
     plot_wordclouds(topics)
 
     # Close spark
