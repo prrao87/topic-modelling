@@ -237,7 +237,7 @@ def plot_wordclouds(topics: List[Dict[str, float]], colormap: str="cividis") -> 
 @plac.annotations(
     num_topics=("Number of topics in LDA", "option", "n", int),
     iterations=("Iterations in LDA", "option", "i", int),
-    vocabsize=("<aximum vocabulary size for LDA", "option", "v", int),
+    vocabsize=("Maximum vocabulary size for LDA", "option", "v", int),
     minDF=("Minimum document frequency for LDA", "option", "m1", float),
     maxDF=("Maximum document frequency for LDA", "option", "m2", float)
 )
