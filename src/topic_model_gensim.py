@@ -2,21 +2,25 @@ import re
 import plac
 import pandas as pd
 import spacy
-from typing import List, Dict, Any
+from spacy.tokens.doc import Doc
+from typing import List, Dict, Set, Any
 from math import ceil
+# Concurrency
+from joblib import Parallel, delayed
+from functools import partial
+from multiprocessing import cpu_count
 # gensim
 from gensim import corpora
 from gensim.models.ldamulticore import LdaMulticore
 # plotting
 from matplotlib import pyplot as plt
 from wordcloud import WordCloud
-# progress bars
-from tqdm import tqdm
-tqdm.pandas()
-
 
 inputfile = "../data/nytimes.tsv"
 stopwordfile = "stopwords/custom_stopwords.txt"
+# Load spaCy model
+nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner', 'tagger'])
+nlp.add_pipe(nlp.create_pipe('sentencizer'))
 
 
 # ============  Methods  =================s
@@ -28,13 +32,13 @@ def read_data(filepath: str) -> pd.DataFrame:
     return df
 
 
-def get_stopwords(stopwordfile: str) -> List[str]:
+def get_stopwords(stopwordfile: str) -> Set[str]:
     "Read in stopwords"
     with open(stopwordfile) as f:
         stopwords = []
         for line in f:
             stopwords.append(line.strip("\n"))
-    return stopwords
+    return set(stopwords)
 
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -45,27 +49,42 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def lemmatize(text: str, nlp, stopwords: List[str]) -> List[str]:
+def lemmatize(doc: Doc, stopwords: List[str]) -> List[str]:
     "Perform lemmatization and stopword removal in the clean text"
-    doc = nlp(text)
     lemma_list = [str(tok.lemma_).lower() for tok in doc
                   if tok.is_alpha and tok.text.lower() not in stopwords]
     return lemma_list
 
 
-def preprocess(df: pd.DataFrame, stopwords: List[str]) -> pd.DataFrame:
-    "Preprocess text in each row of the DataFrame"
-    nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
-    nlp.add_pipe(nlp.create_pipe('sentencizer'))
-    df['lemmas'] = df['clean'].progress_apply(lambda row: lemmatize(row, nlp, stopwords))
-    return df.drop('clean', axis=1)
+def chunker(iterable: List[str], total_length: int, chunksize: int) -> List[str]:
+    return (iterable[pos: pos + chunksize] for pos in range(0, total_length, chunksize))
+
+
+def flatten(list_of_lists: List[List[str]]) -> List[str]:
+    "Flatten a list of lists to a combined list"
+    return [item for sublist in list_of_lists for item in sublist]
+
+
+def process_chunk(stopwords: Set[str], texts: List[str]) -> List[str]:
+    preproc_pipe = []
+    for doc in nlp.pipe(texts, batch_size=20):
+        preproc_pipe.append(lemmatize(doc, stopwords))
+    return preproc_pipe
+
+
+def preprocess_concurrent(texts: List[str], stopwords: Set[str], chunksize: int=100):
+    executor = Parallel(n_jobs=cpu_count() + 1, backend='multiprocessing', prefer="processes")
+    do = delayed(partial(process_chunk, stopwords))
+    tasks = (do(chunk) for chunk in chunker(texts, len(texts), chunksize=chunksize))
+    result = executor(tasks)
+    return flatten(result)
 
 
 def run_lda_multicore(text_df: pd.DataFrame, params: Dict[str, Any], workers: int=7):
     """Run Gensim's multicore LDA topic modelling algorithm
        Choose number of workers for multicore LDA as (num_physical_cores - 1)
     """
-    print("Running LDA model...")
+    print("Applying LDA algorithm...")
     id2word = corpora.Dictionary(text_df['lemmas'])
     # Filter out words that occur in less than 2% documents or more than 50% of the documents.
     id2word.filter_extremes(no_below=params['minDF'], no_above=params['maxDF'])
@@ -100,7 +119,7 @@ def plot_wordclouds(topics: List[Dict[str, float]],
     fig_height = min(ceil(0.65 * num_topics), 20)
     fig = plt.figure(figsize=(fig_width, fig_height))
 
-    for idx, word_weights in tqdm(enumerate(topics), total=num_topics):
+    for idx, word_weights in enumerate(topics):
         ax = fig.add_subplot((num_topics / 5) + 1, 5, idx + 1)
         wordcloud = cloud.generate_from_frequencies(word_weights)
         ax.imshow(wordcloud, interpolation="bilinear")
@@ -133,9 +152,10 @@ def main(num_topics=15, iterations=200, epochs=20, minDF=0.02, maxDF=0.8) -> Non
     }
     df = read_data(inputfile)
     stopwords = get_stopwords(stopwordfile)
-    df_clean = clean_data(df)
-    df_preproc = preprocess(df_clean, stopwords)
-    model, corpus = run_lda_multicore(df_preproc, params)
+    df_preproc = clean_data(df)
+    df_preproc['lemmas'] = preprocess_concurrent(df_preproc['clean'], stopwords)
+    print('Finished preprocessing {} samples'.format(df_preproc.shape[0]))
+    model, corpus = run_lda_multicore(df_preproc, params, workers=cpu_count() + 1)
     topic_list = model.show_topics(formatted=False,
                                    num_topics=params['num_topics'],
                                    num_words=15)
