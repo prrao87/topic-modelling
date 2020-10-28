@@ -1,7 +1,9 @@
 # Building a Scalable Topic Model Workflow
 
 ## Latent Dirichlet Allocation
-By far the most popular method to model themes and topics in discrete document corpora, Latent Dirichlet Allocation (LDA) is a generative probabilistic model that represents documents as a distribution over words belonging to a topic. In general, topic modelling is an *unsupervised modelling technique* that requires human inspection as well as some level of domain expertise to label the extracted distribution of words as a "topic". A key feature of LDA is that it is a "multiple membership" mixture model, meaning that the same words can appear multiple times in different topics. 
+Topic modelling is an unsupervised machine learning technique to discover the main ‘topics’, or themes,in a collection of unstructured documents. A ‘topic’ here refers to a cluster of words that represents a larger concept from the real world. Each document in a corpus can be imagined as consisting of multiple topics in different proportions all at once — for example, in an article about a major airline procuring new aircraft, it is reasonable to expect many words related to finance, geopolitics, travel policy, as well as passenger trends and market events that led to the deal taking place. A document can thus be composed of several topics, each consisting of specific words (that may or may not overlap between topics).
+
+Topic modelling encapsulates these ideas into a mathematical framework that discovers clusters of word distributions representing overall themes within the corpus, making it a useful technique to analyze very large datasets for their content.The mathematical goal of topic modelling is to fit a model’s parameters to the given data using heuristic rules, such that there is a maximum likelihood that the data arose from the model. Such methods are known as parametric methods, among which ​Latent Dirichlet Allocation​ (LDA) is by far the most popular.
 
 Several Python-based implementations of LDA exist - the focus in this repo is to study the topic modelling results of two specific implementations: __Gensim__ and __PySpark__. Broadly speaking, both methods perform similar steps, but it is entirely up to the user to preprocess the text as required beforehand. Specifically for news articles and communication research corpora, the below sequence of preprocessing steps (as per [[1]](#references)) are found to provide good topic model results downstream:
 
@@ -82,7 +84,7 @@ python3 create_stopword_list.py
 This script pulls the default spaCy stopword list, and adds a number of news article-specific vocabulary to the stopword list (obtained after some trial and error and inspecting initial model results).
 
 ## Train topic model
-See the [models section](https://github.com/prrao87/topic-modelling/tree/master/models).
+See the [src](https://github.com/prrao87/topic-modelling/tree/master/models) directory.
 
 ---
 
