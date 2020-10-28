@@ -1,5 +1,5 @@
 import re
-import plac
+import argparse
 import pandas as pd
 import spacy
 from spacy.tokens.doc import Doc
@@ -73,14 +73,18 @@ def process_chunk(stopwords: Set[str], texts: List[str]) -> List[str]:
 
 
 def preprocess_concurrent(texts: List[str], stopwords: Set[str], chunksize: int=100):
-    executor = Parallel(n_jobs=cpu_count() + 1, backend='multiprocessing', prefer="processes")
+    executor = Parallel(n_jobs=params['n_proc'], backend='multiprocessing', prefer="processes")
     do = delayed(partial(process_chunk, stopwords))
     tasks = (do(chunk) for chunk in chunker(texts, len(texts), chunksize=chunksize))
     result = executor(tasks)
     return flatten(result)
 
 
-def run_lda_multicore(text_df: pd.DataFrame, params: Dict[str, Any], workers: int=7):
+def run_lda_multicore(
+        text_df: pd.DataFrame,
+        params: Dict[str, Any],
+        workers: int = 7
+    ):
     """Run Gensim's multicore LDA topic modelling algorithm
        Choose number of workers for multicore LDA as (num_physical_cores - 1)
     """
@@ -94,11 +98,11 @@ def run_lda_multicore(text_df: pd.DataFrame, params: Dict[str, Any], workers: in
         corpus=corpus,
         id2word=id2word,
         workers=workers,
-        num_topics=params['num_topics'],
+        num_topics=params['n_topics'],
         random_state=1,
         chunksize=2048,
         passes=params['epochs'],
-        iterations=params['iterations'],
+        iterations=params['iter'],
     )
     return lda_model, corpus
 
@@ -135,34 +139,31 @@ def plot_wordclouds(topics: List[Dict[str, float]],
     fig.savefig("gensim-topics.png", bbox_extra_artists=[st], bbox_inches='tight')
 
 
-@plac.annotations(
-    num_topics=("Number of topics in LDA", "option", "n", int),
-    iterations=("Iterations in LDA", "option", "i", int),
-    epochs=("Training epochs", "option", "e", int),
-    minDF=("Minimum document frequency for LDA", "option", "m1", float),
-    maxDF=("Maximum document frequency for LDA", "option", "m2", float)
-)
-def main(num_topics=15, iterations=200, epochs=20, minDF=0.02, maxDF=0.8) -> None:
-    params = {
-        'num_topics': num_topics,
-        'iterations': iterations,
-        'epochs': epochs,
-        'minDF': minDF,
-        'maxDF': maxDF,
-    }
+def main(params: Dict[str, Any]) -> None:
     df = read_data(inputfile)
     stopwords = get_stopwords(stopwordfile)
+    print(f'Beginning text preprocessing...')
     df_preproc = clean_data(df)
     df_preproc['lemmas'] = preprocess_concurrent(df_preproc['clean'], stopwords)
     print('Finished preprocessing {} samples'.format(df_preproc.shape[0]))
-    model, corpus = run_lda_multicore(df_preproc, params, workers=cpu_count() + 1)
+    model, corpus = run_lda_multicore(df_preproc, params, workers=params['n_proc'])
     topic_list = model.show_topics(formatted=False,
-                                   num_topics=params['num_topics'],
-                                   num_words=15)
+                                   num_topics=params['n_topics'],
+                                   num_words=20)
     # Store topic words amd weights as a list of dicts
     topics = [dict(item[1]) for item in topic_list]
     plot_wordclouds(topics)
 
 
 if __name__ == "__main__":
-    plac.call(main)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--n_topics", "-t", type=int, default=20, help="Number of topics in LDA")
+    parser.add_argument("--iter", "-i", type=int, default=200, help="Max iterations in LDA")
+    parser.add_argument("--epochs", "-e", type=int, default=20, help="Max number of epochs for Gensim")
+    parser.add_argument("--minDF", "-m1", type=float, default=0.02, help="Minimum document frequency")
+    parser.add_argument("--maxDF", "-m2", type=float, default=0.8, help="Maximum document frequency")
+    parser.add_argument("--n_proc", "-n", type=int, default=cpu_count() + 1, help="Number of CPU processes")
+
+    params = vars(parser.parse_args())
+    # Run LDA
+    main(params)

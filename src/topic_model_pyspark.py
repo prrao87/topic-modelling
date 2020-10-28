@@ -1,5 +1,4 @@
-import sys
-import plac  # For command line arguments
+import argparse
 from math import ceil
 from tqdm import tqdm
 from typing import List, Dict, Any
@@ -113,8 +112,8 @@ def set_idf(inputCol: str, outputCol: str):
 
 def set_lda_model(params: Dict[str, Any]):
     lda = LDA(
-        k=params['num_topics'],
-        maxIter=params['iterations'],
+        k=params['n_topics'],
+        maxIter=params['iter'],
         optimizer="online",
         seed=1,
         learningOffset=100.0,  # If high, early iterations are downweighted during training
@@ -184,8 +183,8 @@ def describe_topics(mlModel) -> List[Dict[str, float]]:
     # Store LDA model part of pipeline
     ldaModel = mlModel.stages[2]
 
-    # Take top 15 words in each topic
-    topics = ldaModel.describeTopics(15)
+    # Take top 20 words in each topic
+    topics = ldaModel.describeTopics(20)
     topics_rdd = topics.rdd
 
     topic_words = topics_rdd \
@@ -234,21 +233,7 @@ def plot_wordclouds(topics: List[Dict[str, float]], colormap: str="cividis") -> 
     fig.savefig("pyspark-topics.png", bbox_extra_artists=[st], bbox_inches='tight')
 
 
-@plac.annotations(
-    num_topics=("Number of topics in LDA", "option", "n", int),
-    iterations=("Iterations in LDA", "option", "i", int),
-    vocabsize=("Maximum vocabulary size for LDA", "option", "v", int),
-    minDF=("Minimum document frequency for LDA", "option", "m1", float),
-    maxDF=("Maximum document frequency for LDA", "option", "m2", float)
-)
-def main(num_topics=10, iterations=100, vocabsize=5000, minDF=0.02, maxDF=0.8) -> List[Dict[str, float]]:
-    params = {
-        'num_topics': num_topics,
-        'iterations': iterations,
-        'vocabsize': vocabsize,
-        'minDF': minDF,
-        'maxDF': maxDF,
-    }
+def main(params: Dict[str, Any]) -> List[Dict[str, float]]:
     df = read_data(inputfile)
     preprocDF = run_spark_preproc_pipeline(df)
     # Persist NLP DataFrame for performance
@@ -259,6 +244,15 @@ def main(num_topics=10, iterations=100, vocabsize=5000, minDF=0.02, maxDF=0.8) -
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--n_topics", "-t", type=int, default=20, help="Number of topics in LDA")
+    parser.add_argument("--iter", "-i", type=int, default=150, help="Max iterations in LDA")
+    parser.add_argument("--vocabsize", "-v", type=int, default=5000, help="Max vocabSize in LDA")
+    parser.add_argument("--minDF", "-m1", type=float, default=0.02, help="Minimum document frequency")
+    parser.add_argument("--maxDF", "-m2", type=float, default=0.8, help="Maximum document frequency")
+
+    params = vars(parser.parse_args())
+
     # Begin spark session
     spark = (SparkSession.builder
         .appName("Spark Topic Model")
@@ -273,7 +267,7 @@ if __name__ == "__main__":
     )
     sc = spark.sparkContext
 
-    topics = plac.call(main)
+    topics = main(params)
     plot_wordclouds(topics)
 
     # Close spark
