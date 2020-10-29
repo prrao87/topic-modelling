@@ -98,7 +98,7 @@ def run_lda_multicore(
         corpus=corpus,
         id2word=id2word,
         workers=workers,
-        num_topics=params['n_topics'],
+        num_topics=params['topics'],
         random_state=1,
         chunksize=2048,
         passes=params['epochs'],
@@ -148,7 +148,7 @@ def main(params: Dict[str, Any]) -> None:
     print('Finished preprocessing {} samples'.format(df_preproc.shape[0]))
     model, corpus = run_lda_multicore(df_preproc, params, workers=params['n_proc'])
     topic_list = model.show_topics(formatted=False,
-                                   num_topics=params['n_topics'],
+                                   num_topics=params['topics'],
                                    num_words=20)
     # Store topic words amd weights as a list of dicts
     topics = [dict(item[1]) for item in topic_list]
@@ -157,7 +157,7 @@ def main(params: Dict[str, Any]) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--n_topics", "-t", type=int, default=20, help="Number of topics in LDA")
+    parser.add_argument("--topics", "-t", type=int, default=20, help="Number of topics in LDA")
     parser.add_argument("--iter", "-i", type=int, default=200, help="Max iterations in LDA")
     parser.add_argument("--epochs", "-e", type=int, default=20, help="Max number of epochs for Gensim")
     parser.add_argument("--minDF", "-m1", type=float, default=0.02, help="Minimum document frequency")

@@ -6,20 +6,20 @@ The Gensim LDA module takes in a training corpus and allows us to perform severa
 The Gensim topic model script accepts command line arguments as follows.
 
 ```sh
-python3 topic_model_gensim.py --n_topics 20 --iter 200 --epochs 20 --minDF 0.02 --maxDF 0.8
+python3 topic_model_gensim.py --topics 20 --iter 200 --epochs 20 --minDF 0.02 --maxDF 0.8
 ```
 
 Obtain a description of the command line arguments by typing the `-h` command.
 
 ```sh
 python3 topic_model_gensim.py -h
-usage: topic_model_gensim.py [-h] [--n_topics N_TOPICS] [--iter ITER]
+usage: topic_model_gensim.py [-h] [--topics TOPICS] [--iter ITER]
                              [--epochs EPOCHS] [--minDF MINDF] [--maxDF MAXDF]
                              [--n_proc N_PROC]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --n_topics N_TOPICS, -t N_TOPICS
+  --topics TOPICS, -t TOPICS
                         Number of topics in LDA
   --iter ITER, -i ITER  Max iterations in LDA
   --epochs EPOCHS, -e EPOCHS
@@ -41,19 +41,19 @@ The LDA topic model pipeline in PySpark uses its DataFrame API. The NYT tabular 
 The PySpark topic model script **requires a manual specification** of the external Spark NLP library (which is used for large-scale, parallelized lemmatization of terms in the data), followed by the optional arguments for the hyperparameters.
 
 ```sh
-spark-submit --packages com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.0 topic_model_pyspark.py --n_topics 20 --iter 200 --vocabsize 5000 --minDF 0.02 --maxDF 0.8
+spark-submit --packages com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.0 topic_model_pyspark.py --topics 20 --iter 200 --vocabsize 5000 --minDF 0.02 --maxDF 0.8
 ```
 
 Obtain a description of the command line arguments by typing the `-h` command.
 ```sh
 spark-submit --packages com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.0 topic_model_pyspark.py --help
-usage: topic_model_pyspark.py [-h] [--n_topics N_TOPICS] [--iter ITER]
+usage: topic_model_pyspark.py [-h] [--topics TOPICS] [--iter ITER]
                               [--vocabsize VOCABSIZE] [--minDF MINDF]
                               [--maxDF MAXDF]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --n_topics N_TOPICS, -t N_TOPICS
+  --topics TOPICS, -t TOPICS
                         Number of topics in LDA
   --iter ITER, -i ITER  Max iterations in LDA
   --vocabsize VOCABSIZE, -v VOCABSIZE
