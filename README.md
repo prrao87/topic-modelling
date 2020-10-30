@@ -84,7 +84,7 @@ python3 create_stopword_list.py
 This script pulls the default spaCy stopword list, and adds a number of news article-specific vocabulary to the stopword list (obtained after some trial and error and inspecting initial model results).
 
 ## Train topic model
-See the [src](https://github.com/prrao87/topic-modelling/tree/master/models) directory.
+See the [src](https://github.com/prrao87/topic-modelling/tree/master/src) directory.
 
 ---
 
