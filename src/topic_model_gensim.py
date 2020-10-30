@@ -46,13 +46,14 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     # Regex pattern for only alphanumeric, hyphenated text with 3 or more chars
     pattern = re.compile(r"[A-Za-z0-9\-]{3,50}")
     df['clean'] = df['content'].str.findall(pattern).str.join(' ')
+    df['clean'] = df['clean'].str.lower()  # Lowercase text before lemmatization
     return df
 
 
 def lemmatize(doc: Doc, stopwords: List[str]) -> List[str]:
     "Perform lemmatization and stopword removal in the clean text"
-    lemma_list = [str(tok.lemma_).lower() for tok in doc
-                  if tok.is_alpha and tok.text.lower() not in stopwords]
+    lemma_list = [tok.lemma_ for tok in doc
+                  if tok.is_alpha and tok.text not in stopwords]
     return lemma_list
 
 
