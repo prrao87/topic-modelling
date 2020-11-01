@@ -68,7 +68,8 @@ def set_document_assembler(inputCol: str):
 
 def set_tokenizer(inputCol: str, outputCol: str):
     "Tokenize text for input to the lemmatizer"
-    tokenizer = (Tokenizer()
+    tokenizer = (
+        Tokenizer()
         .setInputCols([inputCol])
         .setOutputCol(outputCol)
     )
@@ -78,7 +79,8 @@ def set_tokenizer(inputCol: str, outputCol: str):
 def set_lemmatizer(inputCol: str, outputCol: str):
     "Retrieve root lemmas out of the input tokens"
     # Use default SparkNLP English pretrained lemmatizer for now
-    lemmatizer = (LemmatizerModel.pretrained(name="lemma_antbnc", lang="en")
+    lemmatizer = (
+        LemmatizerModel.pretrained(name="lemma_antbnc", lang="en")
         .setInputCols([inputCol])
         .setOutputCol(outputCol)
     )
@@ -87,7 +89,8 @@ def set_lemmatizer(inputCol: str, outputCol: str):
 
 def set_finisher(finishedCol: str):
     "Finisher transform for Spark NLP pipeline"
-    finisher = (Finisher()
+    finisher = (
+        Finisher()
         .setInputCols([finishedCol])
         .setIncludeMetadata(False)
     )
@@ -146,7 +149,8 @@ def run_sparknlp_pipeline(df):
         set_lemmatizer("token", "lemma"),
         set_finisher("lemma")
     ])
-    nlpPipelineDF = (nlpPipeline.fit(df)
+    nlpPipelineDF = (
+        nlpPipeline.fit(df)
         .transform(df)
         .withColumnRenamed('finished_lemma', 'allTokens')
     )
@@ -254,8 +258,8 @@ if __name__ == "__main__":
     params = vars(parser.parse_args())
 
     # Begin spark session
-    spark = (SparkSession.builder
-        .appName("Spark Topic Model")
+    spark = (
+        SparkSession.builder.appName("Spark Topic Model")
         .master("local[*]")
         .config("spark.driver.memory", "1G")
         .config("spark.executor.memory", "1G")

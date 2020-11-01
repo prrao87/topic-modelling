@@ -50,14 +50,14 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def lemmatize(doc: Doc, stopwords: List[str]) -> List[str]:
+def lemmatize(doc: Doc, stopwords: Set[str]) -> List[str]:
     "Perform lemmatization and stopword removal in the clean text"
     lemma_list = [tok.lemma_ for tok in doc
                   if tok.is_alpha and tok.text not in stopwords]
     return lemma_list
 
 
-def chunker(iterable: List[str], total_length: int, chunksize: int) -> List[str]:
+def chunker(iterable: List[str], total_length: int, chunksize: int):
     return (iterable[pos: pos + chunksize] for pos in range(0, total_length, chunksize))
 
 
@@ -66,7 +66,7 @@ def flatten(list_of_lists: List[List[str]]) -> List[str]:
     return [item for sublist in list_of_lists for item in sublist]
 
 
-def process_chunk(stopwords: Set[str], texts: List[str]) -> List[str]:
+def process_chunk(stopwords: Set[str], texts: List[str]) -> List[List[str]]:
     preproc_pipe = []
     for doc in nlp.pipe(texts, batch_size=20):
         preproc_pipe.append(lemmatize(doc, stopwords))
