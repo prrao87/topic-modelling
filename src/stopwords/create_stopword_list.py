@@ -53,17 +53,19 @@ if __name__ == "__main__":
                     'month', 'months', 'year', 'years']
     time_related = ['yesterday', 'today', 'tomorrow', 'day', 'night', 'morning',
                     'afternoon', 'evening', 'edt', 'est', 'time', 'times']
-    common_nouns = ['press', 'news', 'report', 'page', 'user', 'file', 'video', 'pic',
+    common_nouns = ['new', 'york', 'press', 'news', 'report', 'page', 'user', 'file', 'video', 'pic',
                     'photo', 'online', 'social', 'media', 'group', 'inbox', 'item',
                     'advertisement', 'world', 'store', 'story', 'life', 'family',
                     'people', 'man', 'woman', 'friend', 'friends']
     social_media = ['twitter', 'facebook', 'google', 'gmail', 'video', 'photo', 'image',
                     'user', 'social', 'media', 'page', 'online', 'stream', 'post',
                     'app']
-    light_verb_roots = ['call', 'click', 'continue', 'comment', 'do', 'feel', 'find',
-                        'give', 'get', 'have', 'include', 'like', 'live', 'love', 'make',
-                        'post', 'read', 'say', 'speak', 'send', 'share', 'show', 'sign',
-                        'tag', 'take', 'tell', 'think', 'update', 'work', 'write']
+    light_verb_roots = [
+        'ask', 'come', 'go', 'know', 'look', 'see', 'talk', 'try', 'use', 'want', 'call', 'click',
+        'continue', 'comment', 'do', 'feel', 'find', 'give', 'get', 'have', 'include', 'like', 'live',
+        'love', 'make', 'post', 'read', 'say', 'speak', 'send', 'share', 'show', 'sign', 'tag',
+        'take', 'tell', 'think', 'update', 'work', 'write'
+    ]
     # Convert light verb roots to all its forms using lemma lookup
     light_verbs_full = lookup_verbs(light_verb_roots, spacy_lemmas)
 
