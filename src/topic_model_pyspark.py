@@ -29,6 +29,7 @@ schema = StructType([
 # Input file and Stopwords
 inputfile = "../data/nytimes.tsv"
 stopwordfile = "stopwords/custom_stopwords.txt"
+lemmafile = "spacy_lemmas/spacy_english_lemmas.txt"
 
 
 def read_data(inputfile: str):
@@ -80,9 +81,10 @@ def set_lemmatizer(inputCol: str, outputCol: str):
     "Retrieve root lemmas out of the input tokens"
     # Use default SparkNLP English pretrained lemmatizer for now
     lemmatizer = (
-        LemmatizerModel.pretrained(name="lemma_antbnc", lang="en")
+        Lemmatizer()
         .setInputCols([inputCol])
         .setOutputCol(outputCol)
+        .setDictionary(lemmafile, key_delimiter="->", value_delimiter="\s+", read_as="TEXT")
     )
     return lemmatizer
 
@@ -276,3 +278,6 @@ if __name__ == "__main__":
 
     # Close spark
     spark.stop()
+
+    # Example command
+    # spark-submit --packages com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.5 topic_model_pyspark.py
