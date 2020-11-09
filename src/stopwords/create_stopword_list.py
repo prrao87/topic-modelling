@@ -53,7 +53,7 @@ if __name__ == "__main__":
                     'month', 'months', 'year', 'years']
     time_related = ['yesterday', 'today', 'tomorrow', 'day', 'night', 'morning',
                     'afternoon', 'evening', 'edt', 'est', 'time', 'times']
-    common_nouns = ['new', 'york', 'press', 'news', 'report', 'page', 'user', 'file', 'video', 'pic',
+    common_nouns = ['new', 'york', 'nytimes', 'press', 'news', 'report', 'page', 'user', 'file', 'video', 'pic',
                     'photo', 'online', 'social', 'media', 'group', 'inbox', 'item',
                     'advertisement', 'world', 'store', 'story', 'life', 'family',
                     'people', 'man', 'woman', 'friend', 'friends']

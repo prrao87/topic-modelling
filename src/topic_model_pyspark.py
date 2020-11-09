@@ -245,6 +245,7 @@ def main(params: Dict[str, Any]) -> List[Dict[str, float]]:
     # Persist NLP DataFrame for performance
     nlpPipelineDF = run_sparknlp_pipeline(preprocDF).persist()
     mlModel, ldaPerplexity = run_ml_pipeline(nlpPipelineDF, params)
+    print(f"** Max. upper bound on perplexity: {ldaPerplexity} **")
     topics = describe_topics(mlModel)
     return topics
 
@@ -252,8 +253,8 @@ def main(params: Dict[str, Any]) -> List[Dict[str, float]]:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--topics", "-t", type=int, default=20, help="Number of topics in LDA")
-    parser.add_argument("--iter", "-i", type=int, default=150, help="Max iterations in LDA")
-    parser.add_argument("--vocabsize", "-v", type=int, default=5000, help="Max vocabSize in LDA")
+    parser.add_argument("--iter", "-i", type=int, default=200, help="Max iterations in LDA")
+    parser.add_argument("--vocabsize", "-v", type=int, default=10000, help="Max vocabSize in LDA")
     parser.add_argument("--minDF", "-m1", type=float, default=0.02, help="Minimum document frequency")
     parser.add_argument("--maxDF", "-m2", type=float, default=0.8, help="Maximum document frequency")
 
