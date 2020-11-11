@@ -137,7 +137,10 @@ def plot_wordclouds(topics: List[Dict[str, float]],
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
     plt.margins(x=0.1, y=0.1)
     st = fig.suptitle("LDA Topics", y=0.92)
-    fig.savefig("gensim-topics.png", bbox_extra_artists=[st], bbox_inches='tight')
+    fig.savefig(
+        f"gensim_topics_k={params['topics']}.png",
+        bbox_extra_artists=[st], bbox_inches='tight'
+    )
 
 
 def main(params: Dict[str, Any]) -> None:
@@ -159,8 +162,8 @@ def main(params: Dict[str, Any]) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--topics", "-t", type=int, default=20, help="Number of topics in LDA")
-    parser.add_argument("--iter", "-i", type=int, default=200, help="Max iterations in LDA")
-    parser.add_argument("--epochs", "-e", type=int, default=20, help="Max number of epochs for Gensim")
+    parser.add_argument("--iter", "-i", type=int, default=150, help="Max iterations in LDA")
+    parser.add_argument("--epochs", "-e", type=int, default=10, help="Max number of epochs for Gensim")
     parser.add_argument("--minDF", "-m1", type=float, default=0.02, help="Minimum document frequency")
     parser.add_argument("--maxDF", "-m2", type=float, default=0.8, help="Maximum document frequency")
     parser.add_argument("--n_proc", "-n", type=int, default=cpu_count() + 1, help="Number of CPU processes")

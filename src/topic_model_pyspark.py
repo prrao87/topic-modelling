@@ -236,7 +236,10 @@ def plot_wordclouds(topics: List[Dict[str, float]], colormap: str="cividis") -> 
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
     plt.margins(x=0.1, y=0.1)
     st = fig.suptitle("LDA Topics", y=0.92)
-    fig.savefig("pyspark-topics.png", bbox_extra_artists=[st], bbox_inches='tight')
+    fig.savefig(
+        f"pyspark_topics_k={params['topics']}.png",
+        bbox_extra_artists=[st], bbox_inches='tight'
+    )
 
 
 def main(params: Dict[str, Any]) -> List[Dict[str, float]]:
