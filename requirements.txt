@@ -7,4 +7,4 @@ spark_nlp==2.3.6
 gensim==3.7.3
 spacy==2.3.2
 tqdm==4.32.1
-joblib==0.14.1
+joblib==1.2.0
